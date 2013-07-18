@@ -6,8 +6,6 @@ float axisY_interval;
 float axisX_interval;
 int axisY_interval_num = 5;
 int axisX_interval_num = 5;
-//String[] columnNames;
-//String[] rowNames;
 float [][] data;
 int columnsCount;
 int rowsCount;
@@ -18,8 +16,8 @@ float maxdata;
 int currentrow = 0;
 float [] row;
 float maxtop;
-PImage left;
-PImage right;
+//PImage left;
+//PImage right;
 
 String unit;
   float top;
@@ -29,8 +27,8 @@ PFont zh;
 
 void setup(){
   size(550, 420, "processing.core.PGraphicsRetina2D");
-  left = loadImage("left.png");
-  right = loadImage("right.png");
+  //left = loadImage("left.png");
+  //right = loadImage("right.png");
   zh = createFont("SimHei", 32);//Microsoft YaHei
   textFont(zh);
   axisY_interval = chart_height / axisY_interval_num;
@@ -75,6 +73,7 @@ void setup(){
   
   row = new float[columnsCount];
   
+  //initialization
   for(int i=0;i<columnsCount;i++){
    row[i] = data[0][i];
   }
