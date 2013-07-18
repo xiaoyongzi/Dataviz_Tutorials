@@ -1,8 +1,9 @@
 Bubble bubblechart;
 PFont font;
 
+
 void setup() {
-  size(800,600);//"processing.core.PGraphicsRetina2D");
+  size(800, 600);//"processing.core.PGraphicsRetina2D");
   bubblechart = new Bubble(100, 100, 640, 400);
   smooth(8);
   bubblechart.mapping();
@@ -13,6 +14,8 @@ void setup() {
 
 void draw() {
   background(255);
+  //fill(255,20);
+  //rect(0,0,800,600);
   stroke(0);
   noFill();
   //rect(80, 100, 640, 400);
@@ -54,6 +57,7 @@ class Bubble {
   int range_num;
   float incre;
   boolean lock = false;
+  PImage drag;
 
 
   Bubble(int chartX, int chartY, int chartWidth, int chartHeight) {
@@ -90,8 +94,9 @@ class Bubble {
     max_value = max(values);
     rowCount = rows.length;
     stock = new ArrayList<Particle>();
-    range_num = 15;
+    range_num = 50;
     incre = 200;
+    drag = loadImage("drag.png");
   }
 
   void mapping() {
@@ -111,6 +116,7 @@ class Bubble {
   void drawFreq() {
     drawFreqX();
     drawFreqY();
+    index();
   }
 
 
@@ -124,12 +130,15 @@ class Bubble {
     textSize(12);
     textAlign(LEFT, CENTER);
     text(percent+" %", chartX-76, chartY+incre);
+    image(drag, chartX-76, chartY+incre-40, 50, 25);
     text(0+" %", chartX-76, chartY+map(0, min_inc, max_inc, chartHeight, 0));
     textAlign(CENTER, CENTER);
     text("抛出", chartX+0.5*chartWidth-20, chartY+chartHeight+10);
     text("持有", chartX+0.5*chartWidth+20, chartY+chartHeight+10);
-    triangle(chartX+0.5*chartWidth+40, chartY+chartHeight+13, chartX+0.5*chartWidth+35, chartY+chartHeight+9,chartX+0.5*chartWidth+35, chartY+chartHeight+17);
-    triangle(chartX+0.5*chartWidth-41, chartY+chartHeight+13, chartX+0.5*chartWidth-36, chartY+chartHeight+9,chartX+0.5*chartWidth-36, chartY+chartHeight+17); 
+    triangle(chartX+0.5*chartWidth+40, chartY+chartHeight+13, chartX+0.5*chartWidth+35, chartY+chartHeight+9, chartX+0.5*chartWidth+35, chartY+chartHeight+17);
+    triangle(chartX+0.5*chartWidth-41, chartY+chartHeight+13, chartX+0.5*chartWidth-36, chartY+chartHeight+9, chartX+0.5*chartWidth-36, chartY+chartHeight+17); 
+    textSize(16);
+    text("增幅", chartX-40, chartY);
   }
 
   void drawRefarrow() {
@@ -158,7 +167,7 @@ class Bubble {
   }
 
   void drawFreqX() {
-    fill(180, 240);
+    fill(200, 250);
     //stroke(0);
     //strokeWeight(2);
     beginShape();
@@ -173,34 +182,36 @@ class Bubble {
   }
 
   void drawFreqZ() {
-    fill(180, 240);
+    fill(200, 240);
     for (int i=0;i<range_num;i++) {
       rect(chartX-freqPosY()[i], float(chartY+chartHeight/range_num+chartHeight/range_num*i), freqPosY()[i], chartHeight/range_num);
     }
   }
 
   void drawFreqY() {
-    fill(180, 240);
+    fill(200, 250);
     //stroke(0);
     //strokeWeight(2);
     beginShape();
-    vertex(chartX, chartY+chartHeight);
+
     vertex(chartX, chartY);
-    curveVertex(chartX, chartY);
+    //curveVertex(chartX, chartY);
     curveVertex(chartX, chartY);
     for (int i=0;i<range_num;i++) {
       curveVertex(chartX-freqPosY()[i], chartY+chartHeight/range_num*0.5+chartHeight/range_num*i);
     }
-    endShape(CLOSE);
+    vertex(chartX, chartY+chartHeight);
+    endShape();
   }
-  
-  void setR(){
-    for(int i=stock.size()-1;i>=0;i--){
+
+  void setR() {
+    for (int i=stock.size()-1;i>=0;i--) {
       Particle p = stock.get(i);
-      if(p.y>chartY+incre){
+      if (p.y>chartY+incre) {
         p.d = 0.02*chartHeight;
         p.psize = 0;
-      } else {
+      } 
+      else {
         p.d = 2*r[i];
         p.psize = 6;
       }
@@ -216,7 +227,7 @@ class Bubble {
       freq[f]++;
     }
     for (int i=0;i<freq.length;i++) {
-      pos[i] = map(freq[i], 0, max(freq), 0, 30);
+      pos[i] = map(freq[i], 0, max(freq), 0, 40);
     }
     return pos;
   }
@@ -230,7 +241,7 @@ class Bubble {
       freq[f]++;
     }
     for (int i=0;i<freq.length;i++) {
-      pos[i] = map(freq[i], 0, max(freq), 0, 30);
+      pos[i] = map(freq[i], 0, max(freq), 0, 40);
     }
     return pos;
   }
@@ -247,6 +258,19 @@ class Bubble {
       //println(i/dash_num);
     }
   }
+  
+  void index(){
+    Particle p = stock.get(1);
+    String[] index = {"建筑业","农林牧渔","水电煤气","制造业","采矿业","批发零售","文化传播","运输仓储","信息技术","商务服务","科研服务","公共环保","卫生"};
+    for(int i=0;i<index.length;i++){
+      fill(p.plate[i]);
+      ellipse(chartX+53*i,chartY-75,10,10);
+      fill(100);
+      textSize(8);
+      text(index[i],chartX+53*i,chartY-55);
+      //println([i]);
+    }
+  }
 
   void hoverSet() {
     int index = minIndex(distance);
@@ -256,7 +280,7 @@ class Bubble {
         p.hover = 1;
         p.alpha=255;
         textSize(18);
-        text("股票名称: "+ names[i] + "    类别: "+ category_names[i]+"     增幅: " + incr_per[i]+"%    持有情况: " + holdings[i] + "万元",400,550);
+        text("股票名称: "+ names[i] + "    类别: "+ category_names[i]+"     增幅: " + incr_per[i]+"%    持有情况: " + holdings[i] + "万元", 400, 550);
       } 
       else {
         p.hover = 0;
@@ -296,26 +320,26 @@ class Particle {
   int hover;
   boolean sel;
   float alpha = 255;
-  color c5 = color(26, 188, 156);
-  color c8 = color(46, 204, 113);
-  color c9 = color(22, 160, 133);
-  color c7 = color(39, 174, 96);
-  color c1 = color(241, 196, 15);
-  color c6 = color(230, 126, 34);
-  color c4 = color(243, 156, 18);
-  color c10 = color(211, 84, 0);
-  color c3 = color(52, 152, 219);
-  color c2 = color(41, 128, 185);
-    color c11 = color(155, 89, 182);
-  color c12 = color(142, 68, 173);
+  color c6 = color(26, 188, 156);
+  color c9 = color(19,222,232);//color(46, 204, 113);
+  color c10 = color(22, 160, 133);
+  color c1 = color(39, 174, 96);
+  color c4 = color(255, 51, 119);
+  color c15 = color(230, 126, 34);
+  color c2 = color(243, 156, 18);
+  color c7 = color(211, 84, 0);
+  color c5 = color(52, 152, 219);
+  color c11 = color(38, 209, 249);
+  color c12 = color(155, 89, 182);
+  color c3 = color(142, 68, 173);
   color c13 = color(231, 76, 60);
   color c14 = color(192, 57, 43);
-  color c15 = color(52, 73, 94);
-    color c16 = color(44, 62, 80);
+  color c16 = color(52, 73, 94);
+  color c8 = color(41, 211, 139);
   color[] plate = {
-    c1, c2, c3, c4, c5, c6, c7, c8, c9, c10,c11,c12,c13,c14,c15,c16
+    c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
   };
-      float psize=5;
+  float psize=5;
 
   Particle(float x, float y, float r, int category_number, String name, boolean selected) {
     this.x = x;
@@ -352,7 +376,7 @@ class Particle {
       alpha = 200;
       //cursor(ARROW);
     }
-    stroke(255,alpha);
+    stroke(255, alpha);
     strokeWeight(1);
     //println(cat_num);
     fill(plate[cat_num], alpha);
@@ -391,10 +415,10 @@ class Particle {
       point(px, py);
     }
   }
-  
-//  void subtitle(){
-//    if(hover==1){
-//    text("股票名称:“+name+"    增幅:"+int(
+
+  //  void subtitle(){
+  //    if(hover==1){
+  //    text("股票名称:“+name+"    增幅:"+int(
 
   float distance() {
     return dist(x, y, mouseX, mouseY);
