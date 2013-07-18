@@ -395,7 +395,7 @@ class Particle {
     }
     else if (hover==0) {
       fill(180);
-      //psize= map(r, 0, 40, 0, 16);
+      //psize= map(r, 0, 40, 0, 3);
       offsetX=0.5;
       offsetY=0.3;
       //cursor(ARROW);
