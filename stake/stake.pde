@@ -2,12 +2,13 @@ Bubble bubblechart;
 PFont font;
 
 void setup() {
-  size(800, 600, "processing.core.PGraphicsRetina2D");
+  size(800,600);//"processing.core.PGraphicsRetina2D");
   bubblechart = new Bubble(100, 100, 640, 400);
   smooth(8);
   bubblechart.mapping();
   font = createFont("MicrosoftYaHei", 20);
   textFont(font);
+  //hint(ENABLE_RETINA_PIXELS);
 }
 
 void draw() {
@@ -15,6 +16,7 @@ void draw() {
   stroke(0);
   noFill();
   //rect(80, 100, 640, 400);
+  bubblechart.setR();
   bubblechart.hoverSet();
   bubblechart.drawRefline();
   bubblechart.display();
@@ -89,7 +91,7 @@ class Bubble {
     rowCount = rows.length;
     stock = new ArrayList<Particle>();
     range_num = 15;
-    incre = 50;
+    incre = 200;
   }
 
   void mapping() {
@@ -101,10 +103,9 @@ class Bubble {
       else {
         x[i] = chartX+map(holdings[i], min_hold, 0, 0, 0.5*chartWidth);
       }
-      r[i] = map(values[i], 0, max_value, 0, 0.1*chartHeight);
+      r[i] = map(values[i], 0, max(values), 0.01*chartHeight, 0.05*chartHeight);
       stock.add(new Particle(x[i], y[i], r[i], category_num[i], names[i], true));
     }
-    //println(r);
   }
 
   void drawFreq() {
@@ -127,7 +128,8 @@ class Bubble {
     textAlign(CENTER, CENTER);
     text("抛出", chartX+0.5*chartWidth-20, chartY+chartHeight+10);
     text("持有", chartX+0.5*chartWidth+20, chartY+chartHeight+10);
-    //triangle(chartX+0.5*chartWidth+
+    triangle(chartX+0.5*chartWidth+40, chartY+chartHeight+13, chartX+0.5*chartWidth+35, chartY+chartHeight+9,chartX+0.5*chartWidth+35, chartY+chartHeight+17);
+    triangle(chartX+0.5*chartWidth-41, chartY+chartHeight+13, chartX+0.5*chartWidth-36, chartY+chartHeight+9,chartX+0.5*chartWidth-36, chartY+chartHeight+17); 
   }
 
   void drawRefarrow() {
@@ -146,11 +148,9 @@ class Bubble {
   }
 
   void moveLine() {
-
     if (mouseX>=chartX-40 && mouseX<= chartX+0.2*chartWidth && mouseY>=chartY+incre-0.05*chartHeight && mouseY<= chartY+incre+0.05*chartHeight && mousePressed) {
       lock = true;
     }
-
     if (lock) {
       incre = mouseY-chartY;
       constrain(incre, 0, chartHeight);
@@ -192,6 +192,19 @@ class Bubble {
       curveVertex(chartX-freqPosY()[i], chartY+chartHeight/range_num*0.5+chartHeight/range_num*i);
     }
     endShape(CLOSE);
+  }
+  
+  void setR(){
+    for(int i=stock.size()-1;i>=0;i--){
+      Particle p = stock.get(i);
+      if(p.y>chartY+incre){
+        p.d = 0.02*chartHeight;
+        p.psize = 0;
+      } else {
+        p.d = 2*r[i];
+        p.psize = 6;
+      }
+    }
   }
 
   float[] freqPosY() {
@@ -241,9 +254,13 @@ class Bubble {
       Particle p = stock.get(i);
       if (i == index && p.distance()<= p.r) {
         p.hover = 1;
+        p.alpha=255;
+        textSize(18);
+        text("股票名称: "+ names[i] + "    类别: "+ category_names[i]+"     增幅: " + incr_per[i]+"%    持有情况: " + holdings[i] + "万元",400,550);
       } 
       else {
         p.hover = 0;
+        p.alpha = 50;
       }
     }
   }
@@ -279,19 +296,26 @@ class Particle {
   int hover;
   boolean sel;
   float alpha = 255;
-  color c1 = color(26, 188, 156);
-  color c2 = color(52, 152, 219);
-  color c3 = color(243, 156, 18);
-  color c4 = color(52, 73, 94);
-  color c5 = color(231, 76, 60);
-  color c6 = color(26, 188, 156);
-  color c7 = color(52, 152, 219);
-  color c8 = color(243, 156, 18);
-  color c9 = color(52, 73, 94);
-  color c10 = color(231, 76, 60);
+  color c5 = color(26, 188, 156);
+  color c8 = color(46, 204, 113);
+  color c9 = color(22, 160, 133);
+  color c7 = color(39, 174, 96);
+  color c1 = color(241, 196, 15);
+  color c6 = color(230, 126, 34);
+  color c4 = color(243, 156, 18);
+  color c10 = color(211, 84, 0);
+  color c3 = color(52, 152, 219);
+  color c2 = color(41, 128, 185);
+    color c11 = color(155, 89, 182);
+  color c12 = color(142, 68, 173);
+  color c13 = color(231, 76, 60);
+  color c14 = color(192, 57, 43);
+  color c15 = color(52, 73, 94);
+    color c16 = color(44, 62, 80);
   color[] plate = {
-    c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
+    c1, c2, c3, c4, c5, c6, c7, c8, c9, c10,c11,c12,c13,c14,c15,c16
   };
+      float psize=5;
 
   Particle(float x, float y, float r, int category_number, String name, boolean selected) {
     this.x = x;
@@ -303,10 +327,6 @@ class Particle {
     this.name = name;
   }
 
-  void tag() {
-    textAlign(CENTER, CENTER);
-    text(name, x-0.5*r, y-0.3*r, r, r);
-  }
 
   void Selecet() {
     if (sel) {
@@ -325,14 +345,14 @@ class Particle {
   void display() {
     //noStroke();
     if (hover==1) {
-      alpha = 30;
+      alpha = 255;
       //cursor(HAND);
     }
     else if (hover==0) {
-      alpha = 220;
+      alpha = 200;
       //cursor(ARROW);
     }
-    stroke(255);
+    stroke(255,alpha);
     strokeWeight(1);
     //println(cat_num);
     fill(plate[cat_num], alpha);
@@ -340,18 +360,26 @@ class Particle {
     //    noFill();
     //    stroke(plate[cat_num],alpha);
     //    dashcircle();
+    float offsetX=0.5;
+    float offsetY=0.3; 
     if (hover==1) {
-      fill(60);
+      fill(0);
+      //psize=16;
+      offsetX=1.6;
+      offsetY=1.3;
       //cursor(HAND);
     }
     else if (hover==0) {
-      fill(255);
+      fill(180);
+      //psize= map(r, 0, 40, 0, 16);
+      offsetX=0.5;
+      offsetY=0.3;
       //cursor(ARROW);
     }
-    float psize = map(r, 0, 40, 0, 16);
     textSize(psize);
     textAlign(CENTER, CENTER);
-    tag();
+
+    text(name, x-offsetX*r, y-offsetY*r);
   }
 
   void dashcircle() {
@@ -363,6 +391,10 @@ class Particle {
       point(px, py);
     }
   }
+  
+//  void subtitle(){
+//    if(hover==1){
+//    text("股票名称:“+name+"    增幅:"+int(
 
   float distance() {
     return dist(x, y, mouseX, mouseY);
