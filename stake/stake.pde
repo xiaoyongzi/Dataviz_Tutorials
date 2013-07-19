@@ -3,7 +3,7 @@ PFont font;
 
 
 void setup() {
-  size(800, 600);//"processing.core.PGraphicsRetina2D");
+  size(800, 600,OPENGL);//"processing.core.PGraphicsRetina2D");
   bubblechart = new Bubble(100, 100, 640, 400);
   smooth(8);
   bubblechart.mapping();
@@ -14,11 +14,8 @@ void setup() {
 
 void draw() {
   background(255);
-  //fill(255,20);
-  //rect(0,0,800,600);
   stroke(0);
   noFill();
-  //rect(80, 100, 640, 400);
   bubblechart.setR();
   bubblechart.hoverSet();
   bubblechart.drawRefline();
@@ -31,8 +28,15 @@ void mouseReleased() {
   bubblechart.lock = false;
 }
 
+void mouseClicked() {
+  if(bubblechart.getHoverIndex()>0){
+    bubblechart.click[bubblechart.getHoverIndex()]*=-1;
+  }
+}
+
 class Bubble {
   ArrayList<Particle> stock;
+  ArrayList<Particle> index;
   int num_stock;
   String[] names;
   int[] values;
@@ -58,6 +62,8 @@ class Bubble {
   float incre;
   boolean lock = false;
   PImage drag;
+  int[] click;
+
 
 
   Bubble(int chartX, int chartY, int chartWidth, int chartHeight) {
@@ -94,6 +100,7 @@ class Bubble {
     max_value = max(values);
     rowCount = rows.length;
     stock = new ArrayList<Particle>();
+    index = new ArrayList<Particle>();
     range_num = 50;
     incre = 200;
     drag = loadImage("drag.png");
@@ -111,14 +118,43 @@ class Bubble {
       r[i] = map(values[i], 0, max(values), 0.01*chartHeight, 0.05*chartHeight);
       stock.add(new Particle(x[i], y[i], r[i], category_num[i], names[i], true));
     }
+
+    String[] indexName = {"建筑业","农林牧渔","水电煤气","制造业","采矿业","批发零售","文化传播","运输仓储","信息技术","商务服务","科研服务","公共环保","卫生"};
+    for (int i=0; i<indexName.length;i++) {
+      index.add(new Particle(chartX+53*i, chartY-75, 5, i+1, indexName[i], true));
+    }
+    click = new int[indexName.length];
   }
 
-  void drawFreq() {
-    drawFreqX();
-    drawFreqY();
-    index();
+  void display() {
+    for (int i = stock.size()-1; i>=0;i--) {
+      Particle p = stock.get(i);
+      p.display();
+      //p.filterBubble(click);
+      distance[i] = p.distance();
+    }
+
+//    for (int i = index.size()-1;i>=0;i--) {
+//      Particle p = index.get(i);
+//      p.display2();
+//      p.filterIndex(click[i]);
+//    }
   }
 
+  int getHoverIndex(){
+    int hoverindex = -1;
+    for(int i=index.size()-1; i>=0;i--){
+      Particle p = index.get(i);
+      if(p.hover==1){
+        hoverindex = p.hover;
+      }
+    }
+    return hoverindex;
+  }
+
+
+
+//======================================//
 
   void drawRefline() {
     dashline(chartX, chartY+map(0, min_inc, max_inc, chartHeight, 0), chartX+chartWidth, chartY+map(0, min_inc, max_inc, chartHeight, 0));
@@ -133,8 +169,8 @@ class Bubble {
     image(drag, chartX-76, chartY+incre-40, 50, 25);
     text(0+" %", chartX-76, chartY+map(0, min_inc, max_inc, chartHeight, 0));
     textAlign(CENTER, CENTER);
-    text("抛出", chartX+0.5*chartWidth-20, chartY+chartHeight+10);
-    text("持有", chartX+0.5*chartWidth+20, chartY+chartHeight+10);
+    text("减持", chartX+0.5*chartWidth-20, chartY+chartHeight+10);
+    text("增持", chartX+0.5*chartWidth+20, chartY+chartHeight+10);
     triangle(chartX+0.5*chartWidth+40, chartY+chartHeight+13, chartX+0.5*chartWidth+35, chartY+chartHeight+9, chartX+0.5*chartWidth+35, chartY+chartHeight+17);
     triangle(chartX+0.5*chartWidth-41, chartY+chartHeight+13, chartX+0.5*chartWidth-36, chartY+chartHeight+9, chartX+0.5*chartWidth-36, chartY+chartHeight+17); 
     textSize(16);
@@ -162,8 +198,30 @@ class Bubble {
     }
     if (lock) {
       incre = mouseY-chartY;
-      constrain(incre, 0, chartHeight);
+      //constrain(incre, 0, chartHeight);
     }
+  }
+
+    void setR() {
+    for (int i=stock.size()-1;i>=0;i--) {
+      Particle p = stock.get(i);
+      //p.Rupdate();
+      if (p.y>chartY+incre) {
+        p.r = 0.01*chartHeight;
+        p.sel = false;
+      } 
+      else {
+        p.r = r[i];
+        p.sel = true;
+      }
+    }
+  }
+
+  //=======================================//
+
+    void drawFreq() {
+    drawFreqX();
+    drawFreqY();
   }
 
   void drawFreqX() {
@@ -181,12 +239,6 @@ class Bubble {
     endShape();
   }
 
-  void drawFreqZ() {
-    fill(200, 240);
-    for (int i=0;i<range_num;i++) {
-      rect(chartX-freqPosY()[i], float(chartY+chartHeight/range_num+chartHeight/range_num*i), freqPosY()[i], chartHeight/range_num);
-    }
-  }
 
   void drawFreqY() {
     fill(200, 250);
@@ -204,21 +256,7 @@ class Bubble {
     endShape();
   }
 
-  void setR() {
-    for (int i=stock.size()-1;i>=0;i--) {
-      Particle p = stock.get(i);
-      if (p.y>chartY+incre) {
-        p.d = 0.02*chartHeight;
-        p.psize = 0;
-      } 
-      else {
-        p.d = 2*r[i];
-        p.psize = 6;
-      }
-    }
-  }
-
-  float[] freqPosY() {
+    float[] freqPosY() {
     int range = chartHeight/range_num;
     float[] freq = new float[range_num+100];
     float[] pos = new float[range_num+100];
@@ -258,19 +296,10 @@ class Bubble {
       //println(i/dash_num);
     }
   }
-  
-  void index(){
-    Particle p = stock.get(1);
-    String[] index = {"建筑业","农林牧渔","水电煤气","制造业","采矿业","批发零售","文化传播","运输仓储","信息技术","商务服务","科研服务","公共环保","卫生"};
-    for(int i=0;i<index.length;i++){
-      fill(p.plate[i]);
-      ellipse(chartX+53*i,chartY-75,10,10);
-      fill(100);
-      textSize(8);
-      text(index[i],chartX+53*i,chartY-55);
-      //println([i]);
-    }
-  }
+
+
+  //=======================================//
+
 
   void hoverSet() {
     int index = minIndex(distance);
@@ -298,16 +327,8 @@ class Bubble {
     return index;
   }
 
-  void display() {
-    for (int i = stock.size()-1; i>=0;i--) {
-      Particle p = stock.get(i);
-      p.display();
-      //println(stock.size());
-      //println(x.length);
-      distance[i] = p.distance();
-      //p.hover();
-    }
-  }
+//=======================================//
+  
 }
 
 class Particle {
@@ -340,70 +361,112 @@ class Particle {
     c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
   };
   float psize=5;
+  float initial_r;
+  float current_r;
+  //Integrator inter;
 
   Particle(float x, float y, float r, int category_number, String name, boolean selected) {
     this.x = x;
     this.y= y;
     this.r = r;
+    this.r = initial_r;
     sel = selected;
     d = 2*r;
     cat_num = category_number;
     this.name = name;
+    //inter = new Integrator(2*r);
   }
 
-
-  void Selecet() {
-    if (sel) {
-      alpha = 255;
-    } 
-    else {
-      alpha = 50;
+  void filterBubble(int[] catSel){
+    if(catSel[cat_num-1] == 1){
+      r = initial_r;
+    } else {
+      r = 0;
     }
   }
+  
+//  void Rupdate(){
+//    inter.target(2*r);
+//    inter.update();
+//  }
 
-  float interpolate(float current, float target) {
-    current += (target-current)*0.03;
-    return current;
-  }
+//  void filterIndex(int click){
+//    if(click==1){
+//      inter.target(3*r);
+//    } else {
+//      inter.target(2*r);
+//    }
+//  }
+
 
   void display() {
-    //noStroke();
     if (hover==1) {
       alpha = 255;
-      //cursor(HAND);
     }
     else if (hover==0) {
       alpha = 200;
-      //cursor(ARROW);
     }
     stroke(255, alpha);
     strokeWeight(1);
-    //println(cat_num);
     fill(plate[cat_num], alpha);
-    ellipse(x, y, d, d);
+    ellipse(x,y,2*current_r,2*current_r);
+    //ellipse(x, y, inter.value, inter.value);
     //    noFill();
     //    stroke(plate[cat_num],alpha);
     //    dashcircle();
     float offsetX=0.5;
     float offsetY=0.3; 
+
+    if(sel){
+      if(hover==1){
+        fill(0);
+        psize=10;
+        offsetX=0.8;
+        offsetY=1;
+      } else {
+        fill(100);
+        psize= 8;
+        offsetX=0.3;
+        offsetY=0.3;
+      }
+      textSize(psize);
+      textAlign(CENTER, CENTER);
+      text(name, x-offsetX*r, y-offsetY*r); 
+    } else {
+
+    }
+    //Rupdate();
+    update();
+  }
+
+  void display2() {
     if (hover==1) {
-      fill(0);
-      //psize=16;
-      offsetX=1.6;
-      offsetY=1.3;
-      //cursor(HAND);
+      alpha = 255;
     }
     else if (hover==0) {
-      fill(180);
-      //psize= map(r, 0, 40, 0, 16);
-      offsetX=0.5;
-      offsetY=0.3;
-      //cursor(ARROW);
+      alpha = 200;
     }
+    stroke(255, alpha);
+    strokeWeight(1);
+    fill(plate[cat_num], alpha);
+    ellipse(x, y, d, d);
+    //println(inter.value);
+    //    noFill();
+    //    stroke(plate[cat_num],alpha);
+    //    dashcircle();
+    float offsetX=0;
+    float offsetY=8; 
+
     textSize(psize);
     textAlign(CENTER, CENTER);
-
-    text(name, x-offsetX*r, y-offsetY*r);
+    text(name, x-offsetX*r, y+offsetY*r); 
+  }
+  
+  void update() {
+    if(floor(abs(r-current_r))==0){
+    } else {
+      current_r+= 0.4*(r-current_r);
+    }
   }
 
   void dashcircle() {
@@ -416,9 +479,6 @@ class Particle {
     }
   }
 
-  //  void subtitle(){
-  //    if(hover==1){
-  //    text("股票名称:“+name+"    增幅:"+int(
 
   float distance() {
     return dist(x, y, mouseX, mouseY);
@@ -428,7 +488,7 @@ class Particle {
 class Integrator {
 
   final float DAMPING = 0.5f;
-  final float ATTRACTION = 0.2f;
+  final float ATTRACTION = 0.5f;
 
   float value;
   float vel;
@@ -442,29 +502,33 @@ class Integrator {
   float target;
 
 
-  Integrator() {
-  }
+//  Integrator() {
+//  }
 
 
   Integrator(float value) {
     this.value = value;
   }
 
-
-  Integrator(float value, float damping, float attraction) {
-    this.value = value;
-    this.damping = damping;
-    this.attraction = attraction;
-  }
+//
+//  Integrator(float value, float damping, float attraction) {
+//    this.value = value;
+//    this.damping = damping;
+//    this.attraction = attraction;
+//  }
 
 
   void set(float v) {
     value = v;
   }
+  
+  float getvalue(){
+    return value;
+  }
 
 
   void update() {
-    if (targeting) {
+    if (targeting==true) {
       force += attraction * (target - value);
     }
 
@@ -486,4 +550,6 @@ class Integrator {
     targeting = false;
   }
 }
+
+
 
