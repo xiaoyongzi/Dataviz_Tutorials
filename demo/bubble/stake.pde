@@ -14,11 +14,8 @@ void setup() {
 
 void draw() {
   background(255);
-  //fill(255,20);
-  //rect(0,0,800,600);
   stroke(0);
   noFill();
-  //rect(80, 100, 640, 400);
   bubblechart.setR();
   bubblechart.hoverSet();
   bubblechart.drawRefline();
@@ -33,13 +30,13 @@ void mouseReleased() {
 
 void mouseClicked() {
   if(bubblechart.getHoverIndex()>0){
-    bubblechart.click[getHoverIndex]*=-1;
+    bubblechart.click[bubblechart.getHoverIndex()]*=-1;
   }
 }
 
 class Bubble {
   ArrayList<Particle> stock;
-  ArrayList<Paritcle> index;
+  ArrayList<Particle> index;
   int num_stock;
   String[] names;
   int[] values;
@@ -122,34 +119,31 @@ class Bubble {
       stock.add(new Particle(x[i], y[i], r[i], category_num[i], names[i], true));
     }
 
-    String[] index = {"建筑业","农林牧渔","水电煤气","制造业","采矿业","批发零售","文化传播","运输仓储","信息技术","商务服务","科研服务","公共环保","卫生"};
-    for (int i=0; i<index.length;i++) {
-      index.add(new Particle(chartX+53*i, chartY-75, 5, i+1, index[i], true));
+    String[] indexName = {"建筑业","农林牧渔","水电煤气","制造业","采矿业","批发零售","文化传播","运输仓储","信息技术","商务服务","科研服务","公共环保","卫生"};
+    for (int i=0; i<indexName.length;i++) {
+      index.add(new Particle(chartX+53*i, chartY-75, 5, i+1, indexName[i], true));
     }
-    click = new int[index.length];
+    click = new int[indexName.length];
   }
 
   void display() {
     for (int i = stock.size()-1; i>=0;i--) {
       Particle p = stock.get(i);
       p.display();
-      //println(stock.size());
-      //println(x.length);
-      p.filterBubble(click);
+      //p.filterBubble(click);
       distance[i] = p.distance();
-      //p.hover();
     }
 
-    for (int i = index.size()-1;i>=0;i--) {
-      Particle p = index.get(i);
-      p.display2();
-      p.filterIndex(click[i]);
-    }
+//    for (int i = index.size()-1;i>=0;i--) {
+//      Particle p = index.get(i);
+//      p.display2();
+//      p.filterIndex(click[i]);
+//    }
   }
 
   int getHoverIndex(){
     int hoverindex = -1;
-    for(int i=0; i<index.length;i++){
+    for(int i=index.size()-1; i>=0;i--){
       Particle p = index.get(i);
       if(p.hover==1){
         hoverindex = p.hover;
@@ -204,19 +198,20 @@ class Bubble {
     }
     if (lock) {
       incre = mouseY-chartY;
-      constrain(incre, 0, chartHeight);
+      //constrain(incre, 0, chartHeight);
     }
   }
 
     void setR() {
     for (int i=stock.size()-1;i>=0;i--) {
       Particle p = stock.get(i);
+      //p.Rupdate();
       if (p.y>chartY+incre) {
-        p.d = 0.02*chartHeight;
+        p.r = 0.01*chartHeight;
         p.sel = false;
       } 
       else {
-        p.d = 2*r[i];
+        p.r = r[i];
         p.sel = true;
       }
     }
@@ -366,35 +361,42 @@ class Particle {
     c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
   };
   float psize=5;
-  Integrator inter;
+  float initial_r;
+  float current_r;
+  //Integrator inter;
 
   Particle(float x, float y, float r, int category_number, String name, boolean selected) {
     this.x = x;
     this.y= y;
     this.r = r;
+    this.r = initial_r;
     sel = selected;
     d = 2*r;
     cat_num = category_number;
     this.name = name;
-    inter = new Integrator(d);
+    //inter = new Integrator(2*r);
   }
 
   void filterBubble(int[] catSel){
     if(catSel[cat_num-1] == 1){
-      d.target(2*r);
+      r = initial_r;
     } else {
-      d.target(0);
+      r = 0;
     }
-    d.update();
   }
+  
+//  void Rupdate(){
+//    inter.target(2*r);
+//    inter.update();
+//  }
 
-  void filterIndex(int click){
-    if(click==1){
-      d.target(3*r);
-    } else {
-      d.target(2*r);
-    }
-  }
+//  void filterIndex(int click){
+//    if(click==1){
+//      inter.target(3*r);
+//    } else {
+//      inter.target(2*r);
+//    }
+//  }
 
 
   void display() {
@@ -407,7 +409,8 @@ class Particle {
     stroke(255, alpha);
     strokeWeight(1);
     fill(plate[cat_num], alpha);
-    ellipse(x, y, inter.value, inter.value);
+    ellipse(x,y,2*current_r,2*current_r);
+    //ellipse(x, y, inter.value, inter.value);
     //    noFill();
     //    stroke(plate[cat_num],alpha);
     //    dashcircle();
@@ -417,12 +420,12 @@ class Particle {
     if(sel){
       if(hover==1){
         fill(0);
-        psize=8;
+        psize=10;
         offsetX=0.8;
         offsetY=1;
       } else {
         fill(100);
-        psize= 7;
+        psize= 8;
         offsetX=0.3;
         offsetY=0.3;
       }
@@ -432,6 +435,8 @@ class Particle {
     } else {
 
     }
+    //Rupdate();
+    update();
   }
 
   void display2() {
@@ -444,7 +449,8 @@ class Particle {
     stroke(255, alpha);
     strokeWeight(1);
     fill(plate[cat_num], alpha);
-    ellipse(x, y, inter.value, inter.value);
+    ellipse(x, y, d, d);
+    //println(inter.value);
     //    noFill();
     //    stroke(plate[cat_num],alpha);
     //    dashcircle();
@@ -454,6 +460,13 @@ class Particle {
     textSize(psize);
     textAlign(CENTER, CENTER);
     text(name, x-offsetX*r, y+offsetY*r); 
+  }
+  
+  void update() {
+    if(floor(abs(r-current_r))==0){
+    } else {
+      current_r+= 0.4*(r-current_r);
+    }
   }
 
   void dashcircle() {
@@ -475,7 +488,7 @@ class Particle {
 class Integrator {
 
   final float DAMPING = 0.5f;
-  final float ATTRACTION = 0.2f;
+  final float ATTRACTION = 0.5f;
 
   float value;
   float vel;
@@ -489,29 +502,33 @@ class Integrator {
   float target;
 
 
-  Integrator() {
-  }
+//  Integrator() {
+//  }
 
 
   Integrator(float value) {
     this.value = value;
   }
 
-
-  Integrator(float value, float damping, float attraction) {
-    this.value = value;
-    this.damping = damping;
-    this.attraction = attraction;
-  }
+//
+//  Integrator(float value, float damping, float attraction) {
+//    this.value = value;
+//    this.damping = damping;
+//    this.attraction = attraction;
+//  }
 
 
   void set(float v) {
     value = v;
   }
+  
+  float getvalue(){
+    return value;
+  }
 
 
   void update() {
-    if (targeting) {
+    if (targeting==true) {
       force += attraction * (target - value);
     }
 
@@ -533,5 +550,7 @@ class Integrator {
     targeting = false;
   }
 }
+
+
 
 

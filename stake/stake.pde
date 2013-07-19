@@ -3,7 +3,7 @@ PFont font;
 
 
 void setup() {
-  size(800, 600,OPENGL);//"processing.core.PGraphicsRetina2D");
+  size(800, 600);//"processing.core.PGraphicsRetina2D");
   bubblechart = new Bubble(100, 100, 640, 400);
   smooth(8);
   bubblechart.mapping();
