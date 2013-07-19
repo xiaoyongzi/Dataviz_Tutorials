@@ -29,9 +29,10 @@ void mouseReleased() {
 }
 
 void mouseClicked() {
-  if(bubblechart.getHoverIndex()>0){
+  if(bubblechart.getHoverIndex()>=0){
     bubblechart.click[bubblechart.getHoverIndex()]*=-1;
   }
+  //println(bubblechart.getHoverIndex());
 }
 
 class Bubble {
@@ -119,26 +120,29 @@ class Bubble {
       stock.add(new Particle(x[i], y[i], r[i], category_num[i], names[i], true));
     }
 
-    String[] indexName = {"建筑业","农林牧渔","水电煤气","制造业","采矿业","批发零售","文化传播","运输仓储","信息技术","商务服务","科研服务","公共环保","卫生"};
+    String[] indexName = {"农林牧渔","采矿业","制造业","水电煤气","建筑业","批发零售","运输仓储","信息技术","商务服务","科研服务","公共环保","卫生","文化传播"};
     for (int i=0; i<indexName.length;i++) {
-      index.add(new Particle(chartX+53*i, chartY-75, 5, i+1, indexName[i], true));
+      index.add(new Particle(chartX+53*i, chartY-75, 10.0f, i+1, indexName[i], true));
     }
     click = new int[indexName.length];
+    for(int i=0;i<click.length;i++){
+      click[i] = 1;
+    }
   }
 
   void display() {
     for (int i = stock.size()-1; i>=0;i--) {
       Particle p = stock.get(i);
-      p.display();
+      p.display(click);
       //p.filterBubble(click);
       distance[i] = p.distance();
     }
 
-//    for (int i = index.size()-1;i>=0;i--) {
-//      Particle p = index.get(i);
-//      p.display2();
-//      p.filterIndex(click[i]);
-//    }
+    for (int i = index.size()-1;i>=0;i--) {
+      Particle p = index.get(i);
+      p.display2();
+      p.filterIndex(click[i]);
+    }
   }
 
   int getHoverIndex(){
@@ -146,7 +150,7 @@ class Bubble {
     for(int i=index.size()-1; i>=0;i--){
       Particle p = index.get(i);
       if(p.hover==1){
-        hoverindex = p.hover;
+        hoverindex = i;
       }
     }
     return hoverindex;
@@ -207,11 +211,11 @@ class Bubble {
       Particle p = stock.get(i);
       //p.Rupdate();
       if (p.y>chartY+incre) {
-        p.r = 0.01*chartHeight;
+        //p.r = 0.01*chartHeight;
         p.sel = false;
       } 
       else {
-        p.r = r[i];
+        //p.r = r[i];
         p.sel = true;
       }
     }
@@ -302,10 +306,10 @@ class Bubble {
 
 
   void hoverSet() {
-    int index = minIndex(distance);
+    int indexD = minIndex(distance);
     for (int i=stock.size()-1;i>=0;i--) {
       Particle p = stock.get(i);
-      if (i == index && p.distance()<= p.r) {
+      if (i == indexD && p.distance()<= p.r) {
         p.hover = 1;
         p.alpha=255;
         textSize(18);
@@ -315,6 +319,18 @@ class Bubble {
         p.hover = 0;
         p.alpha = 50;
       }
+    }
+    
+    for(int i=index.size()-1; i>=0;i--){
+      Particle p = index.get(i);
+      if(p.distance()<= p.r){
+        p.hover = 1;
+        p.alpha = 200;
+      } else {
+        p.hover = 0;
+        p.alpha = 255;
+      }
+      //println(p.r);
     }
   }
 
@@ -369,7 +385,8 @@ class Particle {
     this.x = x;
     this.y= y;
     this.r = r;
-    this.r = initial_r;
+    initial_r = r;
+    current_r = r;
     sel = selected;
     d = 2*r;
     cat_num = category_number;
@@ -377,29 +394,22 @@ class Particle {
     //inter = new Integrator(2*r);
   }
 
-  void filterBubble(int[] catSel){
-    if(catSel[cat_num-1] == 1){
-      r = initial_r;
-    } else {
-      r = 0;
-    }
-  }
   
 //  void Rupdate(){
 //    inter.target(2*r);
 //    inter.update();
 //  }
 
-//  void filterIndex(int click){
-//    if(click==1){
-//      inter.target(3*r);
-//    } else {
-//      inter.target(2*r);
-//    }
-//  }
+  void filterIndex(int click){
+    if(click==1){
+      r = 1.5*initial_r;
+    } else {
+      r = initial_r;
+    }
+  }
 
 
-  void display() {
+  void display(int[] catSel) {
     if (hover==1) {
       alpha = 255;
     }
@@ -416,8 +426,9 @@ class Particle {
     //    dashcircle();
     float offsetX=0.5;
     float offsetY=0.3; 
-
-    if(sel){
+   if(catSel[cat_num-1] == 1){
+      if(sel){
+      r = initial_r;
       if(hover==1){
         fill(0);
         psize=10;
@@ -433,8 +444,12 @@ class Particle {
       textAlign(CENTER, CENTER);
       text(name, x-offsetX*r, y-offsetY*r); 
     } else {
-
+      r = 0.01*400;
     }
+    } else {
+      r =  0;//initial_r;
+    }
+    
     //Rupdate();
     update();
   }
@@ -449,17 +464,21 @@ class Particle {
     stroke(255, alpha);
     strokeWeight(1);
     fill(plate[cat_num], alpha);
-    ellipse(x, y, d, d);
+    //ellipse(x,y,d,d);
+    //ellipse(x, y, 2*current_r, 2*current_r);
+    ellipse(x,y,2*current_r,2*current_r);
     //println(inter.value);
     //    noFill();
     //    stroke(plate[cat_num],alpha);
     //    dashcircle();
     float offsetX=0;
-    float offsetY=8; 
-
+    float offsetY=2.2;
+    fill(200); 
+    psize = 10;
     textSize(psize);
     textAlign(CENTER, CENTER);
-    text(name, x-offsetX*r, y+offsetY*r); 
+    text(name, x-offsetX*r, y+offsetY*15);
+   update(); 
   }
   
   void update() {
