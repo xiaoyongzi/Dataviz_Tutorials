@@ -1,14 +1,41 @@
-import de.fhpotsdam.unfolding.mapdisplay.MapDisplayFactory;
+import processing.core.*; 
+import processing.xml.*; 
+
+import de.fhpotsdam.unfolding.mapdisplay.MapDisplayFactory; 
+import de.fhpotsdam.unfolding.*; 
+import de.fhpotsdam.unfolding.core.*; 
+import de.fhpotsdam.unfolding.geo.*; 
+import de.fhpotsdam.unfolding.utils.*; 
+import de.fhpotsdam.unfolding.providers.*; 
+import de.fhpotsdam.unfolding.marker.*; 
+
+import java.applet.*; 
+import java.awt.Dimension; 
+import java.awt.Frame; 
+import java.awt.event.MouseEvent; 
+import java.awt.event.KeyEvent; 
+import java.awt.event.FocusEvent; 
+import java.awt.Image; 
+import java.io.*; 
+import java.net.*; 
+import java.text.*; 
+import java.util.*; 
+import java.util.zip.*; 
+import java.util.regex.*; 
+
+public class Lesson3_map_API extends PApplet {
+
+
 //import processing.opengl.*;
 //import codeanticode.glgraphics.*;
-import de.fhpotsdam.unfolding.*;
-import de.fhpotsdam.unfolding.core.*;
-import de.fhpotsdam.unfolding.geo.*;
-import de.fhpotsdam.unfolding.utils.*;
-import de.fhpotsdam.unfolding.providers.*;
-import de.fhpotsdam.unfolding.marker.*;
 
-Location beijinglocation = new Location(39.9,116.39);
+
+
+
+
+
+
+Location beijinglocation = new Location(39.9f,116.39f);
 
 de.fhpotsdam.unfolding.Map map1;
 de.fhpotsdam.unfolding.Map map2;
@@ -17,7 +44,7 @@ int rowCount;
 SimplePointMarker[] haidianBorder;
 ScreenPosition[] borderPos;
 
-void setup() {
+public void setup() {
   size(800, 600);
   smooth();
   String[] rows = loadStrings("haidian.tsv");
@@ -28,7 +55,7 @@ void setup() {
   
   for(int i=0;i<rowCount;i++){
     String[] pieces = split(rows[i], TAB); 
-    Location loc = new Location(float(pieces[1]),float(pieces[0]));
+    Location loc = new Location(PApplet.parseFloat(pieces[1]),PApplet.parseFloat(pieces[0]));
     haidianBorder[i] = new SimplePointMarker(loc);
   }
   
@@ -46,7 +73,7 @@ void setup() {
  
 }
 
-void draw() {
+public void draw() {
   background(0);
   for(int i =0;i<rowCount;i++){
     borderPos[i] = haidianBorder[i].getScreenPosition(map1);
@@ -106,3 +133,7 @@ class streamProvider extends MapBox.MapBoxProvider {
 }
 
 
+  static public void main(String args[]) {
+    PApplet.main(new String[] { "--bgcolor=#FFFFFF", "Lesson3_map_API" });
+  }
+}
