@@ -99,6 +99,7 @@ void draw(){
   //image(left,350,-50,20,20);
   //image(right,380,-50,20,20);
   popMatrix();
+  //save("chart_preview.png");
 }
 
 /*void arrow(String arrowname, boolean hover){
