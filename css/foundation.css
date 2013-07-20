@@ -1130,7 +1130,7 @@ dl {
   font-family: inherit; }
 
 ul, ol {
-  margin-left: 0; }
+  margin-left: 1.5em; }
 
 /* Unordered Lists */
 ul li ul,
