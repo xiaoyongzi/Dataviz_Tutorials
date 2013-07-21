@@ -43,7 +43,7 @@ class Bubble {
   int max_value;
 
   Bubble(int chartX, int chartY, int chartWidth, int chartHeight) {
-    String[] rows = loadStrings("stock.csv");
+    String[] rows = loadStrings("stock2.csv");
     x = new float[rows.length];
     y = new float[rows.length];
     r = new float[rows.length];
