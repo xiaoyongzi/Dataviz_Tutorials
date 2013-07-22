@@ -8,6 +8,7 @@ void setup() {
   smooth(8);
   bubblechart.mapping();
   font = createFont("MicrosoftYaHei", 20);
+  //font = createFont("Heiti",20);
   textFont(font);
   //hint(ENABLE_RETINA_PIXELS);
 }
@@ -19,8 +20,8 @@ void draw() {
   bubblechart.setR();
   bubblechart.hoverSet();
   bubblechart.drawRefline();
-  bubblechart.display();
   bubblechart.drawFreq();
+  bubblechart.display();
   bubblechart.drawRefarrow();
 }
 
@@ -102,7 +103,7 @@ class Bubble {
     rowCount = rows.length;
     stock = new ArrayList<Particle>();
     index = new ArrayList<Particle>();
-    range_num = 50;
+    range_num = 20;
     incre = 200;
     drag = loadImage("drag.png");
   }
@@ -223,13 +224,23 @@ class Bubble {
 
   //=======================================//
 
+  String[] backName(int dimension){
+    String[] backname = new String[10];
+    for(int i = stock.size()-1; i>=0; i--){
+      
+    }
+  }
+
+  //=======================================//
+
     void drawFreq() {
+    noStroke();
     drawFreqX();
     drawFreqY();
   }
 
   void drawFreqX() {
-    fill(200, 250);
+    fill(200, 200);
     //stroke(0);
     //strokeWeight(2);
     beginShape();
@@ -245,7 +256,7 @@ class Bubble {
 
 
   void drawFreqY() {
-    fill(200, 250);
+    fill(200, 200);
     //stroke(0);
     //strokeWeight(2);
     beginShape();
@@ -379,6 +390,8 @@ class Particle {
   float psize=5;
   float initial_r;
   float current_r;
+  float accel;
+  float vel;
   //Integrator inter;
 
   Particle(float x, float y, float r, int category_number, String name, boolean selected) {
@@ -402,19 +415,20 @@ class Particle {
 
   void filterIndex(int click){
     if(click==1){
-      r = 1.5*initial_r;
-    } else {
       r = initial_r;
+    } else {
+      r = 0.5*initial_r;
+      fill(100,200);
     }
   }
 
 
   void display(int[] catSel) {
     if (hover==1) {
-      alpha = 255;
+      alpha = 220;
     }
     else if (hover==0) {
-      alpha = 200;
+      alpha = 150;
     }
     stroke(255, alpha);
     strokeWeight(1);
@@ -459,7 +473,7 @@ class Particle {
       alpha = 255;
     }
     else if (hover==0) {
-      alpha = 200;
+      alpha = 180;
     }
     stroke(255, alpha);
     strokeWeight(1);
@@ -472,7 +486,7 @@ class Particle {
     //    stroke(plate[cat_num],alpha);
     //    dashcircle();
     float offsetX=0;
-    float offsetY=2.2;
+    float offsetY=1.8;
     fill(200); 
     psize = 10;
     textSize(psize);
@@ -484,7 +498,11 @@ class Particle {
   void update() {
     if(floor(abs(r-current_r))==0){
     } else {
-      current_r+= 0.4*(r-current_r);
+      // accel += 0.4*(r-current_r);
+      // vel += (vel + accel) * 0.2;
+      // current_r += vel;
+      // accel = 0;
+      current_r += 0.4*(r-current_r);
     }
   }
 
